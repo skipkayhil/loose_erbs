@@ -1,3 +1,5 @@
 #!/usr/bin/env ruby
 
 require "loose_erbs"
+
+LooseErbs::Cli.new.run
