@@ -17,16 +17,18 @@ If bundler is not being used to manage dependencies, install the gem by executin
 ```shell
 $ loose_erbs
 /home/hartley/test/dm/app/views/layouts/application.html.erb
-/home/hartley/test/dm/app/views/posts/_form.html.erb
-/home/hartley/test/dm/app/views/posts/_post.html.erb
+
 /home/hartley/test/dm/app/views/posts/edit.html.erb
-└── /home/hartley/test/dm/app/views/posts/form
+└── /home/hartley/test/dm/app/views/posts/_form.html.erb
+
 /home/hartley/test/dm/app/views/posts/index.html.erb
-└── posts/post
+└── /home/hartley/test/dm/app/views/posts/_post.html.erb
+
 /home/hartley/test/dm/app/views/posts/new.html.erb
-└── /home/hartley/test/dm/app/views/posts/form
+└── /home/hartley/test/dm/app/views/posts/_form.html.erb
+
 /home/hartley/test/dm/app/views/posts/show.html.erb
-└── posts/post
+└── /home/hartley/test/dm/app/views/posts/_post.html.erb
 ```
 
 ## Development
