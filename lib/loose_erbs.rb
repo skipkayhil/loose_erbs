@@ -30,29 +30,6 @@ module LooseErbs
     end
   end
 
-  class Template
-    class << self
-      def from(path)
-        new(path, File.read(path))
-      end
-    end
-
-    attr_reader :path, :source
-
-    def initialize(path, source)
-      @path = path
-      @source = source
-    end
-
-    def handler
-      ActionView::Template::Handlers::ERB
-    end
-
-    def type
-      ["text/html"]
-    end
-  end
-
   class Registry
     def initialize(root)
       @root = root
@@ -60,7 +37,7 @@ module LooseErbs
     end
 
     def dependencies_for(template)
-      LooseErbs.parser_class.call(template.path, template).map { lookup(_1) }
+      LooseErbs.parser_class.call(template.identifier, template).map { lookup(_1) }
     end
 
     # this feels like a hack around not using view paths...
@@ -90,7 +67,13 @@ module LooseErbs
     end
 
     def register(path)
-      @map[path] = Template.from(path)
+      @map[path] = ActionView::Template.new(
+        File.read(path),
+        path,
+        ActionView::Template::Handlers::ERB,
+        locals: nil,
+        format: :html,
+      )
     end
 
     private
@@ -113,7 +96,7 @@ module LooseErbs
       def print
         o = +""
 
-        o << template.path << "\n"
+        o << template.identifier << "\n"
 
         children.each do |child|
           o << "└── " << child.print
@@ -157,7 +140,7 @@ module LooseErbs
 
     def assign_children!(node)
       registry.dependencies_for(node.template).each do |template|
-        node_for_path = @node_map[template.path]
+        node_for_path = @node_map[template.identifier]
         # TODO: figure out what is nil
         next unless node_for_path
 
