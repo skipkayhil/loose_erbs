@@ -1,0 +1,22 @@
+PATH
+  remote: .
+  specs:
+    loose_erbs (0.0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.21.2)
+    rake (13.1.0)
+
+PLATFORMS
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  loose_erbs!
+  minitest (~> 5.16)
+  rake (~> 13.0)
+
+BUNDLED WITH
+   2.5.5
