@@ -50,6 +50,11 @@ module LooseErbs
         partial = @map[partial_path]
 
         return partial if partial
+
+        partial_path = wrapper.join("../../application/_#{wrapper.basename}.html.erb").to_s
+        partial = @map[partial_path]
+
+        return partial if partial
       else
         # posts/post
         partial_path = @root.join(pathish)
