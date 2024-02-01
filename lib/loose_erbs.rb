@@ -18,7 +18,7 @@ module LooseErbs
     def run
       require File.expand_path("./config/environment")
 
-      Registry.new.print
+      Registry.new.to_graph.print
     end
   end
 
@@ -69,10 +69,6 @@ module LooseErbs
       warn("Couldn't resolve pathish: #{pathish}")
     end
 
-    def print
-      puts to_graph.print
-    end
-
     def register(path)
       @map[path] = ActionView::Template.new(
         File.read(path),
@@ -83,10 +79,9 @@ module LooseErbs
       )
     end
 
-    private
-      def to_graph
-        Graph.new(@map, self)
-      end
+    def to_graph
+      Graph.new(@map, self)
+    end
   end
 
   class Graph
@@ -122,11 +117,7 @@ module LooseErbs
     end
 
     def print
-      o = +""
-
-      root_nodes.each { o << _1.print << "\n" }
-
-      o
+      root_nodes.each { puts _1.print }
     end
 
     private
