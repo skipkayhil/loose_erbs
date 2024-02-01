@@ -1,3 +1,6 @@
 inherit_gem:
   rubocop-rails_config:
     - config/rails.yml
+
+Rails/RefuteMethods:
+  Enabled: false

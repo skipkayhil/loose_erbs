@@ -35,7 +35,7 @@ module LooseErbs
     def run
       require File.expand_path("./config/environment")
 
-      Registry.new.to_graph.print(filters)
+      Registry.new(ActionController::Base.view_paths).to_graph.print(filters)
     end
 
     private
@@ -87,21 +87,17 @@ module LooseErbs
     end
 
     class Node
-      attr_reader :children, :parents, :template
+      attr_reader :children, :identifier, :parents
 
-      def initialize(template)
-        @template = template
+      def initialize(identifier)
+        @identifier = identifier
         @children = []
         @parents = []
       end
-
-      def identifier
-        template.identifier
-      end
     end
 
-    def initialize(map, registry)
-      @node_map = map.transform_values { Node.new(_1) }
+    def initialize(keys, registry)
+      @node_map = keys.to_h { [_1, Node.new(_1)] }
       @registry = registry
 
       nodes.each { process(_1) }
@@ -130,9 +126,9 @@ module LooseErbs
       end
 
       def assign_children!(node)
-        registry.dependencies_for(node.template).each do |template|
+        registry.dependencies_for(node.identifier).each do |identifier|
           # warn("No template registered for path: #{template.identifier}")
-          node.children << @node_map.fetch(template.identifier) { Node.new(template) }
+          node.children << @node_map.fetch(identifier) { Node.new(identifier) }
         end
       end
 
