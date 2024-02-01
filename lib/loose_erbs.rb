@@ -59,7 +59,6 @@ module LooseErbs
       else
         # posts/post
         @view_paths.each do |view_path|
-          binding.irb
           partial_path = Pathname.new(view_path).join(pathish).join("../_#{wrapper.basename}.html.erb").to_s
           partial = @map[partial_path]
 
