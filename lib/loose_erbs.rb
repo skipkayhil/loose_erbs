@@ -18,6 +18,13 @@ module LooseErbs
   NoParentFilter = ->(node) { node.parents.empty? }
   PartialFilter = ->(node) { Pathname.new(node.identifier).basename.to_s.start_with?("_") }
 
+  RegexpIncludeFactory = ->(regexp) {
+    ->(node) { node.identifier.match?(regexp) }
+  }
+  RegexpExcludeFactory = ->(regexp) {
+    ->(node) { !node.identifier.match?(regexp) }
+  }
+
   class Cli
     def initialize(argv)
       @options = {}
@@ -37,6 +44,8 @@ module LooseErbs
       def filters
         [
           NoParentFilter,
+          (RegexpIncludeFactory.call(options[:include]) if options[:include]),
+          (RegexpExcludeFactory.call(options[:exclude]) if options[:exclude]),
           (PartialFilter unless options[:all]),
         ].compact
       end
@@ -44,6 +53,8 @@ module LooseErbs
       def option_parser
         OptionParser.new do |parser|
           parser.on("--all", "Print all files with no parents (defaults to only partials)")
+          parser.on("--include [REGEXP]", Regexp, "Only print files that match [REGEXP]")
+          parser.on("--exclude [REGEXP]", Regexp, "Do not print files that match [REGEXP]")
         end
       end
   end
