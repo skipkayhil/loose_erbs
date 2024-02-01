@@ -16,28 +16,24 @@ module LooseErbs
 
   class Cli
     def run
-      registry = Registry.new(Pathname.pwd.join("app/views"))
+      require File.expand_path("./config/environment")
 
-      views.each { registry.register(_1) }
-
-      registry.print
-    end
-
-    private
-
-    def views
-      Dir["#{Dir.pwd}/app/views/**/*.html.erb"]
+      Registry.new.print
     end
   end
 
   class Registry
-    def initialize(root)
-      @root = root
+    def initialize
       @map = {}
+      @view_paths = ActionController::Base.view_paths
+
+      @view_paths.each do |view_path|
+        Dir["#{view_path}/**/*.erb"].each { register _1 }
+      end
     end
 
     def dependencies_for(template)
-      LooseErbs.parser_class.call(template.identifier, template).map { lookup(_1) }
+      LooseErbs.parser_class.call(template.identifier, template, @view_paths).map { lookup(_1) }
     end
 
     # this feels like a hack around not using view paths...
@@ -51,17 +47,24 @@ module LooseErbs
 
         return partial if partial
 
-        partial_path = @root.join("application/_#{wrapper.basename}.html.erb").to_s
-        partial = @map[partial_path]
+        # The DependencyTracker always puts the partial under the parent's
+        # namespace even if it could be found under a controller's super's
+        # namespace.
+        @view_paths.each do |view_path|
+          partial_path = Pathname.new(view_path).join("application/_#{wrapper.basename}.html.erb").to_s
+          partial = @map[partial_path]
 
-        return partial if partial
+          return partial if partial
+        end
       else
         # posts/post
-        partial_path = @root.join(pathish)
-        partial_path = partial_path.join("../_#{partial_path.basename}.html.erb").to_s
-        partial = @map[partial_path]
+        @view_paths.each do |view_path|
+          binding.irb
+          partial_path = Pathname.new(view_path).join(pathish).join("../_#{wrapper.basename}.html.erb").to_s
+          partial = @map[partial_path]
 
-        return partial if partial
+          return partial if partial
+        end
       end
 
       raise pathish
