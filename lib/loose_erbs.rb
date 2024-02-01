@@ -155,8 +155,10 @@ module LooseErbs
       def assign_children!(node)
         registry.dependencies_for(node.template).each do |template|
           node_for_path = @node_map[template.identifier]
-          # TODO: figure out what is nil
-          next unless node_for_path
+          unless node_for_path
+            warn("No template registered for path: #{template.identifier}")
+            next
+          end
 
           node.children << node_for_path
         end
