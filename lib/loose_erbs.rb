@@ -84,10 +84,9 @@ module LooseErbs
     end
 
     private
-
-    def to_graph
-      Graph.new(@map, self)
-    end
+      def to_graph
+        Graph.new(@map, self)
+      end
   end
 
   class Graph
@@ -131,36 +130,35 @@ module LooseErbs
     end
 
     private
+      attr_reader :registry
 
-    attr_reader :registry
-
-    def root_nodes
-      nodes.filter { _1.parents.empty? }
-    end
-
-    def nodes
-      @node_map.values
-    end
-
-    def process(node)
-      assign_children!(node)
-      assign_parents!(node)
-    end
-
-    def assign_children!(node)
-      registry.dependencies_for(node.template).each do |template|
-        node_for_path = @node_map[template.identifier]
-        # TODO: figure out what is nil
-        next unless node_for_path
-
-        node.children << node_for_path
+      def root_nodes
+        nodes.filter { _1.parents.empty? }
       end
-    end
 
-    def assign_parents!(node)
-      node.children.each do |child_node|
-        child_node.parents << node
+      def nodes
+        @node_map.values
       end
-    end
+
+      def process(node)
+        assign_children!(node)
+        assign_parents!(node)
+      end
+
+      def assign_children!(node)
+        registry.dependencies_for(node.template).each do |template|
+          node_for_path = @node_map[template.identifier]
+          # TODO: figure out what is nil
+          next unless node_for_path
+
+          node.children << node_for_path
+        end
+      end
+
+      def assign_parents!(node)
+        node.children.each do |child_node|
+          child_node.parents << node
+        end
+      end
   end
 end

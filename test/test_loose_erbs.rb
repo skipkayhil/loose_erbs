@@ -4,6 +4,6 @@ require "test_helper"
 
 class TestLooseErbs < Minitest::Test
   def test_that_it_has_a_version_number
-    refute_nil ::LooseErbs::VERSION
+    assert ::LooseErbs::VERSION
   end
 end
