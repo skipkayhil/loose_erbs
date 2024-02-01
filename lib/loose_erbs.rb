@@ -104,7 +104,9 @@ module LooseErbs
         o << template.identifier << "\n"
 
         children.each do |child|
-          o << "└── " << child.print
+          child_out = child.print
+          child_out.gsub!("\n", "\n    ")
+          o << "└── " << child_out
         end
 
         o
