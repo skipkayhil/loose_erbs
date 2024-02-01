@@ -97,7 +97,7 @@ module LooseErbs
 
           puts "#{("    " * depth) + "└── " if depth >= 0}#{node.identifier}"
 
-          if @seen_nodes.include?(node)
+          if @seen_nodes.include?(node) && !node.children.empty?
             puts ("    " * (depth + 1)) + "└── ..."
           else
             @seen_nodes << node
