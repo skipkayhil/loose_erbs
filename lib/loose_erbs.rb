@@ -59,6 +59,16 @@ module LooseErbs
       end
   end
 
+  class UnregisteredTemplate
+    def initialize(pathish)
+      @pathish = pathish
+    end
+
+    def identifier
+      "UNKNOWN TEMPLATE: #{@pathish}"
+    end
+  end
+
   class Registry
     def initialize
       @map = {}
@@ -70,7 +80,7 @@ module LooseErbs
     end
 
     def dependencies_for(template)
-      LooseErbs.parser_class.call(template.identifier, template, @view_paths).filter_map { lookup(_1) }.uniq
+      LooseErbs.parser_class.call(template.identifier, template, @view_paths).uniq.map { lookup(_1) }
     end
 
     # this feels like a hack around not using view paths...
@@ -104,6 +114,7 @@ module LooseErbs
       end
 
       warn("Couldn't resolve pathish: #{pathish}")
+      UnregisteredTemplate.new(pathish)
     end
 
     def register(path)
@@ -193,13 +204,8 @@ module LooseErbs
 
       def assign_children!(node)
         registry.dependencies_for(node.template).each do |template|
-          node_for_path = @node_map[template.identifier]
-          unless node_for_path
-            warn("No template registered for path: #{template.identifier}")
-            next
-          end
-
-          node.children << node_for_path
+          # warn("No template registered for path: #{template.identifier}")
+          node.children << @node_map.fetch(template.identifier) { Node.new(template) }
         end
       end
 
