@@ -33,7 +33,7 @@ module LooseErbs
     end
 
     def dependencies_for(template)
-      LooseErbs.parser_class.call(template.identifier, template, @view_paths).filter_map { lookup(_1) }
+      LooseErbs.parser_class.call(template.identifier, template, @view_paths).filter_map { lookup(_1) }.uniq
     end
 
     # this feels like a hack around not using view paths...
