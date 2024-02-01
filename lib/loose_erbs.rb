@@ -66,7 +66,7 @@ module LooseErbs
         end
       end
 
-      raise pathish
+      warn("Couldn't resolve pathish: #{pathish}")
     end
 
     def print
