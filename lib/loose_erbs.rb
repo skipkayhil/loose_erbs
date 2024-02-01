@@ -85,6 +85,25 @@ module LooseErbs
   end
 
   class Graph
+    class Printer
+      def initialize(root)
+        @node_stack = [[root, 0]]
+      end
+
+      def print
+        while !@node_stack.empty?
+          node, depth = @node_stack.pop
+
+          puts "#{("    " * depth)}#{"└── " if depth > 0}#{node.template.identifier}"
+
+          node.children.each do |child|
+            @node_stack << [child, depth + 1]
+          end
+        end
+        puts
+      end
+    end
+
     class Node
       attr_reader :children, :parents, :template
 
@@ -92,20 +111,6 @@ module LooseErbs
         @template = template
         @children = []
         @parents = []
-      end
-
-      def print
-        o = +""
-
-        o << template.identifier << "\n"
-
-        children.each do |child|
-          child_out = child.print
-          child_out.gsub!("\n", "\n    ")
-          o << "└── " << child_out
-        end
-
-        o
       end
     end
 
@@ -117,7 +122,7 @@ module LooseErbs
     end
 
     def print
-      root_nodes.each { puts _1.print }
+      root_nodes.each { Printer.new(_1).print }
     end
 
     private
