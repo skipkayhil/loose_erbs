@@ -87,17 +87,24 @@ module LooseErbs
   class Graph
     class Printer
       def initialize(root)
-        @node_stack = [[root, 0]]
+        @node_stack = [[root, -1]]
+        @seen_nodes = Set.new
       end
 
       def print
         while !@node_stack.empty?
           node, depth = @node_stack.pop
 
-          puts "#{("    " * depth)}#{"└── " if depth > 0}#{node.template.identifier}"
+          puts "#{("    " * depth) + "└── " if depth >= 0}#{node.identifier}"
 
-          node.children.each do |child|
-            @node_stack << [child, depth + 1]
+          if @seen_nodes.include?(node)
+            puts ("    " * (depth + 1)) + "└── ..."
+          else
+            @seen_nodes << node
+
+            node.children.each do |child|
+              @node_stack << [child, depth + 1]
+            end
           end
         end
         puts
@@ -111,6 +118,10 @@ module LooseErbs
         @template = template
         @children = []
         @parents = []
+      end
+
+      def identifier
+        template.identifier
       end
     end
 
