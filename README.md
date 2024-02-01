@@ -15,7 +15,7 @@ If bundler is not being used to manage dependencies, install the gem by executin
 ## Usage
 
 ```shell
-$ loose_erbs
+$ loose_erbs --all
 /home/hartley/test/dm/app/views/layouts/application.html.erb
 
 /home/hartley/test/dm/app/views/posts/edit.html.erb

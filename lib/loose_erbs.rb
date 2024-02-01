@@ -2,6 +2,7 @@
 
 require "action_view"
 require "action_view/dependency_tracker"
+require "optparse"
 
 require_relative "loose_erbs/version"
 
@@ -14,12 +15,37 @@ module LooseErbs
     ActionView::DependencyTracker::RipperTracker
   end
 
+  NoParentFilter = ->(node) { node.parents.empty? }
+  PartialFilter = ->(node) { Pathname.new(node.identifier).basename.to_s.start_with?("_") }
+
   class Cli
+    def initialize(argv)
+      @options = {}
+
+      option_parser.parse!(into: @options)
+    end
+
     def run
       require File.expand_path("./config/environment")
 
-      Registry.new.to_graph.print
+      Registry.new.to_graph.print(filters)
     end
+
+    private
+      attr_reader :options
+
+      def filters
+        [
+          NoParentFilter,
+          (PartialFilter unless options[:all]),
+        ].compact
+      end
+
+      def option_parser
+        OptionParser.new do |parser|
+          parser.on("--all", "Print all files with no parents (defaults to only partials)")
+        end
+      end
   end
 
   class Registry
@@ -132,16 +158,18 @@ module LooseErbs
       nodes.each { process(_1) }
     end
 
-    def print
-      root_nodes.each { Printer.new(_1).print }
+    def print(filters)
+      nodes_to_print = nodes
+
+      filters.each do |filter|
+        nodes_to_print.filter!(&filter)
+      end
+
+      nodes_to_print.each { Printer.new(_1).print }
     end
 
     private
       attr_reader :registry
-
-      def root_nodes
-        nodes.filter { _1.parents.empty? }
-      end
 
       def nodes
         @node_map.values
