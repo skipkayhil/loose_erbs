@@ -51,7 +51,12 @@ module LooseErbs
 
       nodes = FilterChain.new(filters).filter(nodes) unless filters.empty?
 
-      nodes.each(&:print)
+      if options[:trees]
+        nodes.each(&:print_tree)
+      else
+        puts "\nLoose ERBs:"
+        nodes.each(&:print)
+      end
     end
 
     private
@@ -73,6 +78,7 @@ module LooseErbs
 
       def option_parser
         OptionParser.new do |parser|
+          parser.on("--trees", "Print files and their dependencies")
           parser.on("--all", "Print all files with no parents (defaults to only partials)")
           parser.on("--include [REGEXP]", Regexp, "Only print files that match [REGEXP]")
           parser.on("--exclude [REGEXP]", Regexp, "Do not print files that match [REGEXP]")
@@ -87,7 +93,7 @@ module LooseErbs
         @seen_nodes = Set.new
       end
 
-      def print
+      def print_tree
         while !@node_stack.empty?
           node, depth = @node_stack.pop
 
@@ -117,7 +123,11 @@ module LooseErbs
       end
 
       def print
-        Printer.new(self).print
+        puts identifier
+      end
+
+      def print_tree
+        Printer.new(self).print_tree
       end
     end
 
