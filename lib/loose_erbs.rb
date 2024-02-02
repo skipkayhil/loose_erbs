@@ -53,9 +53,13 @@ module LooseErbs
 
       if options[:trees]
         nodes.each(&:print_tree)
+
+        true
       else
-        puts "\nLoose ERBs:"
+        puts "\nLoose ERBs:" unless nodes.empty?
         nodes.each(&:print)
+
+        nodes.empty?
       end
     end
 

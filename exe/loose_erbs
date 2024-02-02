@@ -3,4 +3,4 @@
 
 require "loose_erbs"
 
-LooseErbs::Cli.new(ARGV).run
+exit(LooseErbs::Cli.new(ARGV).run)
