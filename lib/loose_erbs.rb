@@ -15,7 +15,8 @@ module LooseErbs
     ActionView::DependencyTracker::RipperTracker
   end
 
-  NoParentFilter = ->(node) { node.parents.empty? }
+  LooseFilter = ->(node) { node.loose? }
+
   PartialFilter = ->(node) { Pathname.new(node.identifier).basename.to_s.start_with?("_") }
 
   RegexpIncludeFactory = ->(regexp) {
@@ -49,6 +50,12 @@ module LooseErbs
 
       nodes = registry.to_graph
 
+      unless options[:all]
+        visitor = Graph::LooseVisitor.new
+        # assume regular templates are good until controller parsing is added
+        nodes.reject(&PartialFilter).each { _1.accept(visitor) }
+      end
+
       nodes = FilterChain.new(filters).filter(nodes) unless filters.empty?
 
       if options[:trees]
@@ -72,11 +79,9 @@ module LooseErbs
 
       def filters
         [
-          NoParentFilter,
+          LooseFilter,
           (RegexpIncludeFactory.call(options[:include]) if options[:include]),
           (RegexpExcludeFactory.call(options[:exclude]) if options[:exclude]),
-          # assume regular templates are good until controller parsing is added
-          (PartialFilter unless options[:all]),
         ].compact
       end
 
@@ -117,6 +122,16 @@ module LooseErbs
       end
     end
 
+    class LooseVisitor
+      def visit(node)
+        return unless node.loose?
+
+        node.not_loose!
+
+        node.children.each { visit(_1) }
+      end
+    end
+
     class Node
       attr_reader :children, :identifier, :parents
 
@@ -124,6 +139,19 @@ module LooseErbs
         @identifier = identifier
         @children = []
         @parents = []
+        @loose = true
+      end
+
+      def accept(visitor)
+        visitor.visit(self)
+      end
+
+      def loose?
+        @loose
+      end
+
+      def not_loose!
+        @loose = false
       end
 
       def print
