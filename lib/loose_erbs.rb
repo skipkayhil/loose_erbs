@@ -25,6 +25,18 @@ module LooseErbs
     ->(node) { !node.identifier.match?(regexp) }
   }
 
+  class FilterChain
+    def initialize(filters)
+      @filters = filters
+    end
+
+    def filter(elements)
+      @filters.reduce(elements) do |filtered_elements, filter|
+        filtered_elements.filter(&filter)
+      end
+    end
+  end
+
   class Cli
     def initialize(argv)
       @options = {}
@@ -35,17 +47,26 @@ module LooseErbs
     def run
       require File.expand_path("./config/environment")
 
-      Registry.new(ActionController::Base.view_paths).to_graph.print(filters)
+      nodes = registry.to_graph
+
+      nodes = FilterChain.new(filters).filter(nodes) unless filters.empty?
+
+      nodes.each(&:print)
     end
 
     private
       attr_reader :options
+
+      def registry
+        Registry.new(ActionController::Base.view_paths)
+      end
 
       def filters
         [
           NoParentFilter,
           (RegexpIncludeFactory.call(options[:include]) if options[:include]),
           (RegexpExcludeFactory.call(options[:exclude]) if options[:exclude]),
+          # assume regular templates are good until controller parsing is added
           (PartialFilter unless options[:all]),
         ].compact
       end
@@ -94,23 +115,23 @@ module LooseErbs
         @children = []
         @parents = []
       end
+
+      def print
+        Printer.new(self).print
+      end
     end
+
+    include Enumerable
 
     def initialize(keys, registry)
       @node_map = keys.to_h { [_1, Node.new(_1)] }
       @registry = registry
 
-      nodes.each { process(_1) }
+      each { process(_1) }
     end
 
-    def print(filters)
-      nodes_to_print = nodes
-
-      filters.each do |filter|
-        nodes_to_print.filter!(&filter)
-      end
-
-      nodes_to_print.each { Printer.new(_1).print }
+    def each(&block)
+      nodes.each(&block)
     end
 
     private
