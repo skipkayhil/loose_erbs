@@ -17,8 +17,6 @@ module LooseErbs
 
   LooseFilter = ->(node) { node.loose? }
 
-  PartialFilter = ->(node) { Pathname.new(node.identifier).basename.to_s.start_with?("_") }
-
   RegexpIncludeFactory = ->(regexp) {
     ->(node) { node.identifier.match?(regexp) }
   }
@@ -51,9 +49,13 @@ module LooseErbs
       nodes = registry.to_graph
 
       unless options[:all]
+        used_erbs = scanner.renders.map { registry.lookup(_1) }.to_set
+
         visitor = Graph::LooseVisitor.new
-        # assume regular templates are good until controller parsing is added
-        nodes.reject(&PartialFilter).each { _1.accept(visitor) }
+        nodes.select { |node|
+          # assume regular templates are good until controller parsing is added
+          used_erbs.include?(node.identifier) || !node.partial?
+        }.each { _1.accept(visitor) }
       end
 
       nodes = FilterChain.new(filters).filter(nodes) unless filters.empty?
@@ -75,6 +77,10 @@ module LooseErbs
 
       def registry
         Registry.new(ActionController::Base.view_paths)
+      end
+
+      def scanner
+        Scanner.new
       end
 
       def filters
@@ -154,6 +160,10 @@ module LooseErbs
         @loose = false
       end
 
+      def partial?
+        Pathname.new(identifier).basename.to_s.start_with?("_")
+      end
+
       def print
         puts identifier
       end
@@ -204,3 +214,4 @@ module LooseErbs
 end
 
 require_relative "loose_erbs/registry"
+require_relative "loose_erbs/scanner"

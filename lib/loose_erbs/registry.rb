@@ -36,9 +36,16 @@ module LooseErbs
           return partial_path if @map.key? partial_path
         end
       else
-        # posts/post
         @view_paths.each do |view_path|
+          # DependencyTracker removes the _ from partial pathishs
+          # posts/post
           partial_path = Pathname.new(view_path).join(pathish).join("../_#{wrapper.basename}.html.erb").to_s
+
+          return partial_path if @map.key? partial_path
+
+          # Using the raw RenderParser returns a pathish with the partial _
+          # components/_badge
+          partial_path = Pathname.new(view_path).join(pathish).join("../#{wrapper.basename}.html.erb").to_s
 
           return partial_path if @map.key? partial_path
         end
