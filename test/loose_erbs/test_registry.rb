@@ -27,11 +27,12 @@ class TestRegistry < Minitest::Test
 
   private
     def scaffolds_path
-      File.expand_path("../fixtures/scaffolds", __dir__)
+      File.expand_path("../dummy/app/views", __dir__)
     end
 
     def absolute_scaffolds_paths
       [
+        "layouts/application.html.erb",
         "posts/_form.html.erb",
         "posts/_post.html.erb",
         "posts/edit.html.erb",
