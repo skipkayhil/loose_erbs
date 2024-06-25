@@ -7,12 +7,12 @@ module LooseErbs
       @view_paths = view_paths
 
       @view_paths.each do |view_path|
-        Dir["#{view_path}/**/*.erb"].each { register _1 }
+        Dir["#{view_path}/**/*.erb"].each { register(_1, view_path.path) }
       end
     end
 
     def dependencies_for(identifier)
-      template = @map.fetch(identifier)
+      template = @map.fetch(identifier).fetch(:template)
 
       LooseErbs.parser_class.call(identifier, template, @view_paths).uniq.map { lookup(_1) }
     end
@@ -56,18 +56,21 @@ module LooseErbs
       "UNKNOWN TEMPLATE: #{pathish}"
     end
 
-    def register(path)
-      @map[path] = ActionView::Template.new(
-        File.read(path),
-        path,
-        ActionView::Template::Handlers::ERB,
-        locals: nil,
-        format: :html,
-      )
+    def register(path, view_path)
+      @map[path] = {
+        template: ActionView::Template.new(
+                    File.read(path),
+                    path,
+                    ActionView::Template::Handlers::ERB,
+                    locals: nil,
+                    format: :html,
+                  ),
+        view_path: view_path,
+      }
     end
 
     def to_graph
-      Graph.new(@map.keys, self)
+      Graph.new(@map, self)
     end
   end
 end

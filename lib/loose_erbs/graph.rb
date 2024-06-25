@@ -39,13 +39,14 @@ module LooseErbs
     end
 
     class Node
-      attr_reader :children, :identifier, :parents
+      attr_reader :children, :identifier, :parents, :view_path
 
-      def initialize(identifier)
+      def initialize(identifier, view_path)
         @identifier = identifier
         @children = []
         @parents = []
         @loose = true
+        @view_path = view_path
       end
 
       def accept(visitor)
@@ -75,8 +76,8 @@ module LooseErbs
 
     include Enumerable
 
-    def initialize(keys, registry)
-      @node_map = keys.to_h { [_1, Node.new(_1)] }
+    def initialize(template_map, registry)
+      @node_map = template_map.to_h { |path, val| [path, Node.new(path, val[:view_path])] }
       @registry = registry
 
       each { process(_1) }
