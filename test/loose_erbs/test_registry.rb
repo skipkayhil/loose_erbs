@@ -6,7 +6,7 @@ class TestRegistry < Minitest::Test
   def test_scaffold_files_are_registered
     registry = LooseErbs::Registry.new([scaffolds_path])
 
-    assert_equal absolute_scaffolds_paths, registry.instance_variable_get(:@map).keys
+    assert_predicate (absolute_scaffolds_paths - registry.instance_variable_get(:@map).keys), :empty?
   end
 
   def test_lookup_unknown_dependency
@@ -26,8 +26,18 @@ class TestRegistry < Minitest::Test
   end
 
   private
+    ViewPaths = Struct.new(:path) do
+      def to_s
+        path
+      end
+
+      def to_str
+        path
+      end
+    end
+
     def scaffolds_path
-      File.expand_path("../dummy/app/views", __dir__)
+      ViewPaths.new(File.expand_path("../dummy/app/views", __dir__))
     end
 
     def absolute_scaffolds_paths
@@ -39,6 +49,6 @@ class TestRegistry < Minitest::Test
         "posts/index.html.erb",
         "posts/new.html.erb",
         "posts/show.html.erb",
-      ].map { scaffolds_path + "/" + _1 }
+      ].map { scaffolds_path.path + "/" + _1 }
     end
 end

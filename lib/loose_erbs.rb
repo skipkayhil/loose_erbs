@@ -54,7 +54,8 @@ module LooseErbs
         visitor = Graph::LooseVisitor.new
         nodes.select { |node|
           # assume regular templates are good until controller parsing is added
-          used_erbs.include?(node.identifier) || !node.partial?
+          used_erbs.include?(node.identifier) ||
+            (!node.partial? && routes.public_action_for?(node))
         }.each { _1.accept(visitor) }
       end
 
@@ -77,6 +78,10 @@ module LooseErbs
 
       def registry
         Registry.new(ActionController::Base.view_paths)
+      end
+
+      def routes
+        @routes ||= Routes.new(Rails.application)
       end
 
       def scanner
@@ -104,4 +109,5 @@ end
 
 require_relative "loose_erbs/graph"
 require_relative "loose_erbs/registry"
+require_relative "loose_erbs/routes"
 require_relative "loose_erbs/scanner"

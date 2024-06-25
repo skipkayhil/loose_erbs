@@ -102,7 +102,7 @@ module LooseErbs
       def assign_children!(node)
         registry.dependencies_for(node.identifier).each do |identifier|
           # warn("No template registered for path: #{template.identifier}")
-          node.children << @node_map.fetch(identifier) { Node.new(identifier) }
+          node.children << @node_map.fetch(identifier) { Node.new(identifier, "") }
         end
       end
 
