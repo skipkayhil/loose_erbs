@@ -12,7 +12,7 @@ class TestRegistry < Minitest::Test
   def test_lookup_unknown_dependency
     registry = LooseErbs::Registry.new([scaffolds_path])
 
-    assert_equal "UNKNOWN TEMPLATE: unknown/unknown", registry.lookup("unknown/unknown")
+    assert_nil registry.lookup("does/not/exist")
   end
 
   def test_lookup_scaffold_dependencies
@@ -23,6 +23,14 @@ class TestRegistry < Minitest::Test
         refute dependency_identifier.start_with?("UNKNOWN")
       end
     end
+  end
+
+  def test_unknown_dependencies_for_identifier
+    registry = LooseErbs::Registry.new([scaffolds_path])
+
+    unknown_template_path = "#{scaffolds_path}/unknown/unknown.html.erb"
+
+    assert_equal ["UNKNOWN TEMPLATE: does/not/exist"], registry.dependencies_for(unknown_template_path)
   end
 
   private

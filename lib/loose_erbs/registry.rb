@@ -14,7 +14,13 @@ module LooseErbs
     def dependencies_for(identifier)
       template = @map.fetch(identifier).fetch(:template)
 
-      LooseErbs.parser_class.call(identifier, template, @view_paths).uniq.map { lookup(_1) }
+      LooseErbs.parser_class.call(identifier, template, @view_paths).uniq.map do |pathish|
+        lookup(pathish) || begin
+          warn("Couldn't resolve dependency of '#{identifier}': #{pathish}")
+
+          "UNKNOWN TEMPLATE: #{pathish}"
+        end
+      end
     end
 
     # this feels like a hack around not using view paths...
@@ -51,9 +57,7 @@ module LooseErbs
         end
       end
 
-      warn("Couldn't resolve pathish: #{pathish}")
-
-      "UNKNOWN TEMPLATE: #{pathish}"
+      nil
     end
 
     def register(path, view_path)
