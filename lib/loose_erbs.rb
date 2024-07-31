@@ -15,8 +15,6 @@ module LooseErbs
     ActionView::DependencyTracker::RipperTracker
   end
 
-  LooseFilter = ->(node) { node.loose? }
-
   RegexpIncludeFactory = ->(regexp) {
     ->(node) { node.identifier.match?(regexp) }
   }
@@ -51,8 +49,6 @@ module LooseErbs
       unless options[:all]
         ruby_rendered_erbs = scanner.renders.map { registry.lookup(_1) }.to_set
 
-        visitor = Graph::NotLooseVisitor.new
-
         # Get only the "root" nodes, which are:
         # - rendered from ruby (in a helper, TODO: controller/etc.) OR
         # - not a partial && match a publically accessible controller action (implicit renders)
@@ -70,10 +66,12 @@ module LooseErbs
 
         true
       else
-        puts "\nLoose ERBs:" unless nodes.empty?
+        erb_descriptor = options[:all] ? "All" : "Loose"
+
+        puts "\n#{erb_descriptor} ERBs:" unless nodes.none?
         nodes.each(&:print)
 
-        nodes.empty?
+        options[:all] || nodes.none?
       end
     end
 
@@ -92,12 +90,20 @@ module LooseErbs
         Scanner.new
       end
 
+      def visitor
+        @visitor ||= Graph::NotLooseVisitor.new
+      end
+
       def filters
-        [
-          LooseFilter,
+        @filters ||= [
+          (visitor.to_filter if only_output_loose_erbs?),
           (RegexpIncludeFactory.call(options[:include]) if options[:include]),
           (RegexpExcludeFactory.call(options[:exclude]) if options[:exclude]),
         ].compact
+      end
+
+      def only_output_loose_erbs?
+        !options[:all]
       end
 
       def option_parser

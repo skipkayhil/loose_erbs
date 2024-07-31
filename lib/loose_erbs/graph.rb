@@ -29,12 +29,24 @@ module LooseErbs
     end
 
     class NotLooseVisitor
-      def visit(node)
-        return unless node.loose?
+      def initialize
+        @not_loose_identifiers = Set.new
+      end
 
-        node.not_loose!
+      def visit(node)
+        return unless loose?(node)
+
+        @not_loose_identifiers << node.identifier
 
         node.children.each { visit(_1) }
+      end
+
+      def loose?(node)
+        !@not_loose_identifiers.include?(node.identifier)
+      end
+
+      def to_filter
+        method(:loose?)
       end
     end
 
@@ -45,20 +57,11 @@ module LooseErbs
         @identifier = identifier
         @children = []
         @parents = []
-        @loose = true
         @view_path = view_path
       end
 
       def accept(visitor)
         visitor.visit(self)
-      end
-
-      def loose?
-        @loose
-      end
-
-      def not_loose!
-        @loose = false
       end
 
       def partial?
