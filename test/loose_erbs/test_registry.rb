@@ -4,19 +4,19 @@ require "test_helper"
 
 class TestRegistry < Minitest::Test
   def test_scaffold_files_are_registered
-    registry = LooseErbs::Registry.new([scaffolds_path])
+    registry = LooseErbs::Registry.new(lookup_context)
 
     assert_predicate (absolute_scaffolds_paths - registry.instance_variable_get(:@map).keys), :empty?
   end
 
   def test_lookup_unknown_dependency
-    registry = LooseErbs::Registry.new([scaffolds_path])
+    registry = LooseErbs::Registry.new(lookup_context)
 
     assert_nil registry.lookup("does/not/exist")
   end
 
   def test_lookup_scaffold_dependencies
-    registry = LooseErbs::Registry.new([scaffolds_path])
+    registry = LooseErbs::Registry.new(lookup_context)
 
     absolute_scaffolds_paths.each do |abs_path|
       registry.dependencies_for(abs_path).each do |dependency_identifier|
@@ -26,7 +26,7 @@ class TestRegistry < Minitest::Test
   end
 
   def test_unknown_dependencies_for_identifier
-    registry = LooseErbs::Registry.new([scaffolds_path])
+    registry = LooseErbs::Registry.new(lookup_context)
 
     unknown_template_path = "#{scaffolds_path}/unknown/unknown.html.erb"
 
@@ -34,18 +34,12 @@ class TestRegistry < Minitest::Test
   end
 
   private
-    ViewPaths = Struct.new(:path) do
-      def to_s
-        path
-      end
-
-      def to_str
-        path
-      end
+    def lookup_context
+      ActionView::LookupContext.new([scaffolds_path])
     end
 
     def scaffolds_path
-      ViewPaths.new(File.expand_path("../dummy/app/views", __dir__))
+      File.expand_path("../dummy/app/views", __dir__)
     end
 
     def absolute_scaffolds_paths
@@ -57,6 +51,6 @@ class TestRegistry < Minitest::Test
         "posts/index.html.erb",
         "posts/new.html.erb",
         "posts/show.html.erb",
-      ].map { scaffolds_path.path + "/" + _1 }
+      ].map { scaffolds_path + "/" + _1 }
     end
 end

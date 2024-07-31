@@ -2,9 +2,9 @@
 
 module LooseErbs
   class Registry
-    def initialize(view_paths)
+    def initialize(lookup_context)
       @map = {}
-      @view_paths = view_paths
+      @view_paths = lookup_context.view_paths
 
       @view_paths.each do |view_path|
         Dir["#{view_path}/**/*.erb"].each { register(_1, view_path.path) }

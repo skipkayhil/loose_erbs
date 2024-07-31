@@ -81,7 +81,7 @@ module LooseErbs
       attr_reader :options
 
       def registry
-        Registry.new(ActionController::Base.view_paths)
+        Registry.new(ActionController::Base.new.lookup_context)
       end
 
       def routes
