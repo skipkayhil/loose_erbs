@@ -28,7 +28,7 @@ module LooseErbs
       end
     end
 
-    class LooseVisitor
+    class NotLooseVisitor
       def visit(node)
         return unless node.loose?
 

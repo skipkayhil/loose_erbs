@@ -49,12 +49,16 @@ module LooseErbs
       nodes = registry.to_graph
 
       unless options[:all]
-        used_erbs = scanner.renders.map { registry.lookup(_1) }.to_set
+        ruby_rendered_erbs = scanner.renders.map { registry.lookup(_1) }.to_set
 
-        visitor = Graph::LooseVisitor.new
+        visitor = Graph::NotLooseVisitor.new
+
+        # Get only the "root" nodes, which are:
+        # - rendered from ruby (in a helper, TODO: controller/etc.) OR
+        # - not a partial && match a publically accessible controller action (implicit renders)
+        # and then mark them and their tree of dependencies as NotLoose
         nodes.select { |node|
-          # assume regular templates are good until controller parsing is added
-          used_erbs.include?(node.identifier) ||
+          ruby_rendered_erbs.include?(node.identifier) ||
             (!node.partial? && routes.public_action_for?(node))
         }.each { _1.accept(visitor) }
       end
