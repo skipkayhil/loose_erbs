@@ -56,7 +56,7 @@ module LooseErbs
         nodes.select { |node|
           ruby_rendered_erbs.include?(node.identifier) ||
             (!node.partial? && routes.public_action_for?(node))
-        }.each { _1.accept(visitor) }
+        }.each(&visitor)
       end
 
       nodes = FilterChain.new(filters).filter(nodes) unless filters.empty?

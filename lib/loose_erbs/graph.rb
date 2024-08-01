@@ -52,6 +52,10 @@ module LooseErbs
       def to_filter
         method(:loose?)
       end
+
+      def to_proc
+        method(:visit).to_proc
+      end
     end
 
     class Node
@@ -62,10 +66,6 @@ module LooseErbs
         @template = template
         @children = []
         @view_path = view_path
-      end
-
-      def accept(visitor)
-        visitor.visit(self)
       end
 
       def partial?
