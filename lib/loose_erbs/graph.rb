@@ -51,12 +51,11 @@ module LooseErbs
     end
 
     class Node
-      attr_reader :children, :identifier, :parents, :view_path
+      attr_reader :children, :identifier, :view_path
 
       def initialize(identifier, view_path)
         @identifier = identifier
         @children = []
-        @parents = []
         @view_path = view_path
       end
 
@@ -99,19 +98,12 @@ module LooseErbs
 
       def process(node)
         assign_children!(node)
-        assign_parents!(node)
       end
 
       def assign_children!(node)
         registry.dependencies_for(node.identifier).each do |identifier|
           # warn("No template registered for path: #{template.identifier}")
           node.children << @node_map.fetch(identifier) { Node.new(identifier, "") }
-        end
-      end
-
-      def assign_parents!(node)
-        node.children.each do |child_node|
-          child_node.parents << node
         end
       end
   end
