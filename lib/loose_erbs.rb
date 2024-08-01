@@ -72,7 +72,7 @@ module LooseErbs
       else
         puts "\n#{erb_descriptor} ERBs:" unless nodes.none?
 
-        nodes.each(&:print)
+        nodes.each { puts _1.identifier }
 
         options[:all] || nodes.none?
       end

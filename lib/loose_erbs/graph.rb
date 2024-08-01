@@ -71,10 +71,6 @@ module LooseErbs
       def partial?
         Pathname.new(identifier).basename.to_s.start_with?("_")
       end
-
-      def print
-        puts identifier
-      end
     end
 
     include Enumerable
