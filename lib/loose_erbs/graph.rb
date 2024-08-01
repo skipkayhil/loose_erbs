@@ -51,10 +51,11 @@ module LooseErbs
     end
 
     class Node
-      attr_reader :children, :identifier, :view_path
+      attr_reader :children, :identifier, :template, :view_path
 
-      def initialize(identifier, view_path)
+      def initialize(identifier, template, view_path)
         @identifier = identifier
+        @template = template
         @children = []
         @view_path = view_path
       end
@@ -79,7 +80,7 @@ module LooseErbs
     include Enumerable
 
     def initialize(template_map, registry)
-      @node_map = template_map.to_h { |path, val| [path, Node.new(path, val[:view_path])] }
+      @node_map = template_map.to_h { |path, val| [path, Node.new(path, val[:template], val[:view_path])] }
       @registry = registry
 
       each { process(_1) }
@@ -103,7 +104,7 @@ module LooseErbs
       def assign_children!(node)
         registry.dependencies_for(node.identifier).each do |identifier|
           # warn("No template registered for path: #{template.identifier}")
-          node.children << @node_map.fetch(identifier) { Node.new(identifier, "") }
+          node.children << @node_map.fetch(identifier) { Node.new(identifier, nil, "") }
         end
       end
   end
