@@ -2,29 +2,33 @@
 
 module LooseErbs
   class Graph
-    class Printer
-      def initialize(root)
-        @node_stack = [[root, -1]]
-        @seen_nodes = Set.new
-      end
+    class TreePrinter
+      class << self
+        def to_proc
+          method(:print_tree).to_proc
+        end
 
-      def print_tree
-        while !@node_stack.empty?
-          node, depth = @node_stack.pop
+        def print_tree(root)
+          node_stack = [[root, -1]]
+          seen_nodes = Set.new
 
-          puts "#{("    " * depth) + "└── " if depth >= 0}#{node.identifier}"
+          while !node_stack.empty?
+            node, depth = node_stack.pop
 
-          if @seen_nodes.include?(node) && !node.children.empty?
-            puts ("    " * (depth + 1)) + "└── ..."
-          else
-            @seen_nodes << node
+            puts "#{("    " * depth) + "└── " if depth >= 0}#{node.identifier}"
 
-            node.children.each do |child|
-              @node_stack << [child, depth + 1]
+            if seen_nodes.include?(node) && !node.children.empty?
+              puts ("    " * (depth + 1)) + "└── ..."
+            else
+              seen_nodes << node
+
+              node.children.each do |child|
+                node_stack << [child, depth + 1]
+              end
             end
           end
+          puts
         end
-        puts
       end
     end
 
@@ -70,10 +74,6 @@ module LooseErbs
 
       def print
         puts identifier
-      end
-
-      def print_tree
-        Printer.new(self).print_tree
       end
     end
 

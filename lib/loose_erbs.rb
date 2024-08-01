@@ -61,14 +61,17 @@ module LooseErbs
 
       nodes = FilterChain.new(filters).filter(nodes) unless filters.empty?
 
+      erb_descriptor = options[:all] ? "All" : "Loose"
+
       if options[:trees]
-        nodes.each(&:print_tree)
+        puts "\n#{erb_descriptor} Trees:" unless nodes.none?
+
+        nodes.each(&Graph::TreePrinter)
 
         true
       else
-        erb_descriptor = options[:all] ? "All" : "Loose"
-
         puts "\n#{erb_descriptor} ERBs:" unless nodes.none?
+
         nodes.each(&:print)
 
         options[:all] || nodes.none?
