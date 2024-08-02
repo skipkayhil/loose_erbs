@@ -59,13 +59,17 @@ module LooseErbs
     end
 
     class Node
-      attr_reader :children, :identifier, :template, :view_path
+      attr_reader :children, :identifier, :template
 
       def initialize(identifier, template, view_path)
         @identifier = identifier
         @template = template
         @children = []
         @view_path = view_path
+      end
+
+      def logical_name
+        Pathname.new(identifier).relative_path_from(@view_path).to_s
       end
     end
 
