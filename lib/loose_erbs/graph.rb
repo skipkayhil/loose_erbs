@@ -67,10 +67,6 @@ module LooseErbs
         @children = []
         @view_path = view_path
       end
-
-      def partial?
-        Pathname.new(identifier).basename.to_s.start_with?("_")
-      end
     end
 
     include Enumerable

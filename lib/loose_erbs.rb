@@ -15,6 +15,10 @@ module LooseErbs
     ActionView::DependencyTracker::RipperTracker
   end
 
+  TemplateFilter = ->(node) {
+    !Pathname.new(node.identifier).basename.to_s.start_with?("_")
+  }
+
   RegexpIncludeFactory = ->(regexp) {
     ->(node) { node.identifier.match?(regexp) }
   }
@@ -55,7 +59,7 @@ module LooseErbs
         # and then mark them and their tree of dependencies as NotLoose
         nodes.select { |node|
           ruby_rendered_erbs.include?(node.identifier) ||
-            (!node.partial? && routes.public_action_for?(node))
+            (TemplateFilter.call(node) && routes.public_action_for?(node))
         }.each(&visitor)
       end
 
