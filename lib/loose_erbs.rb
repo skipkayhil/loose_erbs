@@ -16,14 +16,14 @@ module LooseErbs
   end
 
   TemplateFilter = ->(node) {
-    !Pathname.new(node.identifier).basename.to_s.start_with?("_")
+    !Pathname.new(node.template.identifier).basename.to_s.start_with?("_")
   }
 
   RegexpIncludeFactory = ->(regexp) {
-    ->(node) { node.identifier.match?(regexp) }
+    ->(node) { node.template.identifier.match?(regexp) }
   }
   RegexpExcludeFactory = ->(regexp) {
-    ->(node) { !node.identifier.match?(regexp) }
+    ->(node) { !node.template.identifier.match?(regexp) }
   }
 
   class FilterChain
@@ -58,7 +58,7 @@ module LooseErbs
         # - not a partial && match a publically accessible controller action (implicit renders)
         # and then mark them and their tree of dependencies as NotLoose
         nodes.select { |node|
-          ruby_rendered_erbs.include?(node.identifier) ||
+          ruby_rendered_erbs.include?(node.template.identifier) ||
             (TemplateFilter.call(node) && routes.public_action_for?(node))
         }.each(&visitor)
       end
@@ -76,7 +76,7 @@ module LooseErbs
       else
         puts "\n#{erb_descriptor} ERBs:" unless nodes.none?
 
-        nodes.each { puts _1.identifier }
+        nodes.each { puts _1.template.identifier }
 
         options[:all] || nodes.none?
       end

@@ -15,7 +15,9 @@ module LooseErbs
           while !node_stack.empty?
             node, depth = node_stack.pop
 
-            puts "#{("    " * depth) + "└── " if depth >= 0}#{node.identifier}"
+            id = node.template&.identifier || node.name
+
+            puts "#{("    " * depth) + "└── " if depth >= 0}#{id}"
 
             if seen_nodes.include?(node) && !node.children.empty?
               puts ("    " * (depth + 1)) + "└── ..."
@@ -40,13 +42,13 @@ module LooseErbs
       def visit(node)
         return unless loose?(node)
 
-        @not_loose_identifiers << node.identifier
+        @not_loose_identifiers << node.template.identifier if node.template
 
         node.children.each { visit(_1) }
       end
 
       def loose?(node)
-        !@not_loose_identifiers.include?(node.identifier)
+        !@not_loose_identifiers.include?(node.template&.identifier)
       end
 
       def to_filter
@@ -59,7 +61,7 @@ module LooseErbs
     end
 
     class Node
-      attr_reader :children, :identifier, :template
+      attr_reader :children, :template
 
       def initialize(identifier, template, view_path)
         @identifier = identifier
@@ -68,8 +70,12 @@ module LooseErbs
         @view_path = view_path
       end
 
+      def name
+        @identifier
+      end
+
       def logical_name
-        Pathname.new(identifier).relative_path_from(@view_path).to_s
+        Pathname.new(@identifier).relative_path_from(@view_path).to_s
       end
     end
 
@@ -98,7 +104,7 @@ module LooseErbs
       end
 
       def assign_children!(node)
-        registry.dependencies_for(node.identifier).each do |identifier|
+        registry.dependencies_for(node.template&.identifier || node.name).each do |identifier|
           # warn("No template registered for path: #{template.identifier}")
           node.children << @node_map.fetch(identifier) { Node.new(identifier, nil, "") }
         end
