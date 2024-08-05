@@ -63,7 +63,7 @@ module LooseErbs
       if options[:trees]
         out.puts "#{erb_descriptor} Trees:" unless nodes.none?
 
-        nodes.each(&Graph::TreePrinter.new(out))
+        nodes.each(&TreePrinter.new(out))
 
         true
       else
@@ -91,7 +91,7 @@ module LooseErbs
       end
 
       def visitor
-        @visitor ||= Graph::NotLooseVisitor.new
+        @visitor ||= NotLooseVisitor.new
       end
 
       def filters
@@ -117,7 +117,8 @@ module LooseErbs
   end
 end
 
-require_relative "loose_erbs/graph"
+require_relative "loose_erbs/not_loose_visitor"
 require_relative "loose_erbs/registry"
 require_relative "loose_erbs/routes"
 require_relative "loose_erbs/scanner"
+require_relative "loose_erbs/tree_printer"
