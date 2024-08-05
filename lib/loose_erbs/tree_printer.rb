@@ -39,7 +39,6 @@ module LooseErbs
           end
         end
       end
-      out.puts
     end
   end
 end

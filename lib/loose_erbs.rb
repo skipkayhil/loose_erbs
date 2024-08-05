@@ -63,7 +63,13 @@ module LooseErbs
       if options[:trees]
         out.puts "#{erb_descriptor} Trees:" unless nodes.none?
 
-        nodes.each(&TreePrinter.new(out))
+        printer = TreePrinter.new(out)
+
+        nodes.each_with_index do |node, i|
+          out.puts unless i == 0
+
+          printer.print_tree(node)
+        end
 
         true
       else

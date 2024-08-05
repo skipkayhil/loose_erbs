@@ -56,7 +56,6 @@ class TestLooseErbs < Minitest::Test
 
     #{Dir.pwd}/test/dummy/app/views/unknown/unknown.html.erb
     └── UNKNOWN TEMPLATE: does/not/exist
-
     OUT
   end
 
@@ -94,7 +93,6 @@ class TestLooseErbs < Minitest::Test
 
     #{Dir.pwd}/test/dummy/app/views/unknown/unknown.html.erb
     └── UNKNOWN TEMPLATE: does/not/exist
-
     OUT
   end
 
