@@ -39,8 +39,9 @@ module LooseErbs
   end
 
   class Cli
-    def initialize(argv)
+    def initialize(argv, out: $stdout)
       @options = {}
+      @out = out
 
       option_parser.parse!(into: @options)
     end
@@ -68,22 +69,22 @@ module LooseErbs
       erb_descriptor = options[:all] ? "All" : "Loose"
 
       if options[:trees]
-        puts "\n#{erb_descriptor} Trees:" unless nodes.none?
+        out.puts "\n#{erb_descriptor} Trees:" unless nodes.none?
 
-        nodes.each(&Graph::TreePrinter)
+        nodes.each(&Graph::TreePrinter.new(out))
 
         true
       else
-        puts "\n#{erb_descriptor} ERBs:" unless nodes.none?
+        out.puts "\n#{erb_descriptor} ERBs:" unless nodes.none?
 
-        nodes.each { puts _1.template.identifier }
+        nodes.each { out.puts _1.template.identifier }
 
         options[:all] || nodes.none?
       end
     end
 
     private
-      attr_reader :options
+      attr_reader :options, :out
 
       def registry
         Registry.new(ActionController::Base.new.lookup_context)

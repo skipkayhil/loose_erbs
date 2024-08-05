@@ -3,34 +3,38 @@
 module LooseErbs
   class Graph
     class TreePrinter
-      class << self
-        def to_proc
-          method(:print_tree).to_proc
-        end
+      attr_reader :out
 
-        def print_tree(root)
-          node_stack = [[root, -1]]
-          seen_nodes = Set.new
+      def initialize(out)
+        @out = out
+      end
 
-          while !node_stack.empty?
-            node, depth = node_stack.pop
+      def to_proc
+        method(:print_tree).to_proc
+      end
 
-            id = node.template&.identifier || node.name
+      def print_tree(root)
+        node_stack = [[root, -1]]
+        seen_nodes = Set.new
 
-            puts "#{("    " * depth) + "└── " if depth >= 0}#{id}"
+        while !node_stack.empty?
+          node, depth = node_stack.pop
 
-            if seen_nodes.include?(node) && !node.children.empty?
-              puts ("    " * (depth + 1)) + "└── ..."
-            else
-              seen_nodes << node
+          id = node.template&.identifier || node.name
 
-              node.children.each do |child|
-                node_stack << [child, depth + 1]
-              end
+          out.puts "#{("    " * depth) + "└── " if depth >= 0}#{id}"
+
+          if seen_nodes.include?(node) && !node.children.empty?
+            out.puts ("    " * (depth + 1)) + "└── ..."
+          else
+            seen_nodes << node
+
+            node.children.each do |child|
+              node_stack << [child, depth + 1]
             end
           end
-          puts
         end
+        out.puts
       end
     end
 
