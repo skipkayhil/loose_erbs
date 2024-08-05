@@ -61,13 +61,13 @@ module LooseErbs
       erb_descriptor = options[:all] ? "All" : "Loose"
 
       if options[:trees]
-        out.puts "\n#{erb_descriptor} Trees:" unless nodes.none?
+        out.puts "#{erb_descriptor} Trees:" unless nodes.none?
 
         nodes.each(&Graph::TreePrinter.new(out))
 
         true
       else
-        out.puts "\n#{erb_descriptor} ERBs:" unless nodes.none?
+        out.puts "#{erb_descriptor} ERBs:" unless nodes.none?
 
         nodes.each { out.puts _1.template.identifier }
 

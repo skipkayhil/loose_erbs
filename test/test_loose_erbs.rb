@@ -12,7 +12,6 @@ class TestLooseErbs < Minitest::Test
     end
 
     assert_equal <<~OUT, io.string
-
     Loose ERBs:
     #{Dir.pwd}/test/dummy/app/views/posts/what.html.erb
     #{Dir.pwd}/test/dummy/app/views/unknown/unknown.html.erb
@@ -29,7 +28,6 @@ class TestLooseErbs < Minitest::Test
     end
 
     assert_equal <<~OUT, io.string
-
     All ERBs:
     #{Dir.pwd}/test/dummy/app/views/layouts/application.html.erb
     #{Dir.pwd}/test/dummy/app/views/posts/_form.html.erb
@@ -53,7 +51,6 @@ class TestLooseErbs < Minitest::Test
     end
 
     assert_equal <<~OUT, io.string
-
     Loose Trees:
     #{Dir.pwd}/test/dummy/app/views/posts/what.html.erb
 
@@ -74,7 +71,6 @@ class TestLooseErbs < Minitest::Test
     end
 
     assert_equal <<~OUT, io.string
-
     All Trees:
     #{Dir.pwd}/test/dummy/app/views/layouts/application.html.erb
 
