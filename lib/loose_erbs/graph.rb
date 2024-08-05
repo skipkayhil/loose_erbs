@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module LooseErbs
-  class Graph
+  module Graph
     class TreePrinter
       attr_reader :out
 
@@ -20,7 +20,13 @@ module LooseErbs
         while !node_stack.empty?
           node, depth = node_stack.pop
 
-          id = node.template&.identifier || node.name
+          id =
+            case node
+            when ActionView::Digestor::Missing
+              "UNKNOWN TEMPLATE: #{node.name}"
+            else
+              node.template.identifier
+            end
 
           out.puts "#{("    " * depth) + "└── " if depth >= 0}#{id}"
 
@@ -63,55 +69,5 @@ module LooseErbs
         method(:visit).to_proc
       end
     end
-
-    class Node
-      attr_reader :children, :template
-
-      def initialize(identifier, template, view_path)
-        @identifier = identifier
-        @template = template
-        @children = []
-        @view_path = view_path
-      end
-
-      def name
-        @identifier
-      end
-
-      def logical_name
-        Pathname.new(@identifier).relative_path_from(@view_path).to_s
-      end
-    end
-
-    include Enumerable
-
-    def initialize(template_map, registry)
-      @node_map = template_map.to_h { |path, val| [path, Node.new(path, val[:template], val[:view_path])] }
-      @registry = registry
-
-      each { process(_1) }
-    end
-
-    def each(&block)
-      nodes.each(&block)
-    end
-
-    private
-      attr_reader :registry
-
-      def nodes
-        @node_map.values
-      end
-
-      def process(node)
-        assign_children!(node)
-      end
-
-      def assign_children!(node)
-        registry.dependencies_for(node.template&.identifier || node.name).each do |identifier|
-          # warn("No template registered for path: #{template.identifier}")
-          node.children << @node_map.fetch(identifier) { Node.new(identifier, nil, "") }
-        end
-      end
   end
 end

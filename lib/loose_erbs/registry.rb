@@ -6,21 +6,19 @@ module LooseErbs
       @map = {}
       @view_paths = lookup_context.view_paths
 
-      @view_paths.each do |view_path|
-        Dir["#{view_path}/**/*.erb"].each { register(_1, view_path.path) }
+      lookup_context.view_paths.each do |view_path|
+        # TODO: all_template_paths is nodoc
+        view_path.all_template_paths.each do
+          ActionView::Digestor.tree(_1.virtual_path, lookup_context, _1.partial?, @map)
+        end
       end
     end
 
-    def dependencies_for(identifier)
-      template = @map.fetch(identifier).fetch(:template)
+    include Enumerable
 
-      LooseErbs.parser_class.call(identifier, template, @view_paths).uniq.map do |pathish|
-        lookup(pathish) || begin
-          warn("Couldn't resolve dependency of '#{identifier}': #{pathish}")
-
-          "UNKNOWN TEMPLATE: #{pathish}"
-        end
-      end
+    def each(&block)
+      # ignore Missing nodes when iterating
+      @map.values.each { yield _1 if _1.template }
     end
 
     # this feels like a hack around not using view paths...
@@ -58,23 +56,6 @@ module LooseErbs
       end
 
       nil
-    end
-
-    def register(path, view_path)
-      @map[path] = {
-        template: ActionView::Template.new(
-                    File.read(path),
-                    path,
-                    ActionView::Template::Handlers::ERB,
-                    locals: nil,
-                    format: :html,
-                  ),
-        view_path: view_path,
-      }
-    end
-
-    def to_graph
-      Graph.new(@map, self)
     end
   end
 end

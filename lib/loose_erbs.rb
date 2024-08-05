@@ -7,14 +7,6 @@ require "optparse"
 require_relative "loose_erbs/version"
 
 module LooseErbs
-  singleton_class.attr_accessor :parser_class
-
-  self.parser_class = if defined?(ActionView::DependencyTracker::RubyTracker)
-    ActionView::DependencyTracker::RubyTracker
-  else
-    ActionView::DependencyTracker::RipperTracker
-  end
-
   TemplateFilter = ->(node) {
     !Pathname.new(node.template.identifier).basename.to_s.start_with?("_")
   }
@@ -49,7 +41,7 @@ module LooseErbs
     def run
       require File.expand_path("./config/environment")
 
-      nodes = registry.to_graph
+      nodes = registry
 
       unless options[:all]
         ruby_rendered_erbs = scanner.renders.map { registry.lookup(_1) }.to_set
@@ -87,7 +79,7 @@ module LooseErbs
       attr_reader :options, :out
 
       def registry
-        Registry.new(ActionController::Base.new.lookup_context)
+        @registry ||= Registry.new(ActionController::Base.new.lookup_context)
       end
 
       def routes
