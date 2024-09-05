@@ -7,9 +7,8 @@ module LooseErbs
       @view_paths = lookup_context.view_paths
 
       lookup_context.view_paths.each do |view_path|
-        # TODO: all_template_paths is nodoc
-        view_path.all_template_paths.each do
-          ActionView::Digestor.tree(_1.virtual_path, lookup_context, _1.partial?, @map)
+        all_erb_template_paths(view_path).each do |tp|
+          ActionView::Digestor.tree(tp.virtual_path, lookup_context, tp.partial?, @map)
         end
       end
     end
@@ -57,5 +56,29 @@ module LooseErbs
 
       nil
     end
+
+    private
+      def all_erb_template_paths(view_path)
+        erb_template_paths = []
+
+        dir_stack = [Pathname.new(view_path.path)]
+
+        while dir = dir_stack.pop
+          dir.each_child do |child_path|
+            if child_path.file?
+              next unless child_path.extname.end_with?(".erb")
+
+              erb_template_paths << child_path.relative_path_from(view_path.path).to_s.remove(/\.[^\/]*\z/)
+            else
+              dir_stack << child_path
+            end
+          end
+        end
+
+        erb_template_paths.uniq!
+        erb_template_paths.sort!
+        erb_template_paths.map! { ActionView::TemplatePath.parse(_1) }
+        erb_template_paths
+      end
   end
 end
