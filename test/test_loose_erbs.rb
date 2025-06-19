@@ -8,7 +8,7 @@ class TestLooseErbs < Minitest::Test
     io = StringIO.new
 
     in_dummy_app do
-      LooseErbs::Cli.new(nil, out: io).run
+      refute LooseErbs::Cli.new(nil, out: io).run
     end
 
     assert_equal <<~OUT, io.string
@@ -24,7 +24,7 @@ class TestLooseErbs < Minitest::Test
     in_dummy_app do
       cli = LooseErbs::Cli.new(nil, out: io)
       cli.instance_variable_get(:@options)[:all] = true
-      cli.run
+      assert cli.run
     end
 
     assert_equal <<~OUT, io.string
@@ -48,7 +48,7 @@ class TestLooseErbs < Minitest::Test
     in_dummy_app do
       cli = LooseErbs::Cli.new(nil, out: io)
       cli.instance_variable_get(:@options)[:trees] = true
-      cli.run
+      assert cli.run
     end
 
     assert_equal <<~OUT, io.string
@@ -67,7 +67,7 @@ class TestLooseErbs < Minitest::Test
       cli = LooseErbs::Cli.new(nil, out: io)
       cli.instance_variable_get(:@options)[:all] = true
       cli.instance_variable_get(:@options)[:trees] = true
-      cli.run
+      assert cli.run
     end
 
     assert_equal <<~OUT, io.string
