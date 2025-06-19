@@ -23,9 +23,9 @@ module LooseErbs
       @filters = filters
     end
 
-    def filter(elements)
+    def filter!(elements)
       @filters.reduce(elements) do |filtered_elements, filter|
-        filtered_elements.filter(&filter)
+        filtered_elements.filter!(&filter)
       end
     end
   end
@@ -41,48 +41,42 @@ module LooseErbs
     def run
       require File.expand_path("./config/environment")
 
-      nodes = registry
+      mark_entrypoints_as_not_loose! unless options[:all]
 
-      unless options[:all]
-        ruby_rendered_erbs = scanner.renders.map { registry.lookup(_1) }.to_set
+      nodes = registry.to_a
 
-        # Get only the "root" nodes, which are:
-        # - rendered from ruby (in a helper, TODO: controller/etc.) OR
-        # - not a partial && match a publically accessible controller action (implicit renders)
-        # and then mark them and their tree of dependencies as NotLoose
-        nodes.select { |node|
-          ruby_rendered_erbs.include?(node.template.identifier) ||
-            (TemplateFilter.call(node) && routes.public_action_for?(node))
-        }.each(&visitor)
-      end
+      FilterChain.new(filters).filter!(nodes) unless filters.empty?
 
-      nodes = FilterChain.new(filters).filter(nodes) unless filters.empty?
-
-      erb_descriptor = options[:all] ? "All" : "Loose"
-
-      if options[:trees]
-        out.puts "#{erb_descriptor} Trees:" unless nodes.none?
+      if nodes.empty?
+        true
+      elsif options[:trees]
+        out.write "#{erb_descriptor} Trees:"
 
         printer = TreePrinter.new(out)
 
-        nodes.each_with_index do |node, i|
-          out.puts unless i == 0
-
-          printer.print_tree(node)
-        end
+        nodes.each { out.puts; printer.print_tree(_1) }
 
         true
       else
-        out.puts "#{erb_descriptor} ERBs:" unless nodes.none?
+        out.puts "#{erb_descriptor} ERBs:"
 
         nodes.each { out.puts _1.template.identifier }
 
-        options[:all] || nodes.none?
+        options[:all]
       end
     end
 
     private
       attr_reader :options, :out
+
+      def erb_descriptor
+        options[:all] ? "All" : "Loose"
+      end
+
+      def mark_entrypoints_as_not_loose!
+        renders_in_helpers.each(&visitor)
+        renders_in_controllers.each(&visitor)
+      end
 
       def registry
         @registry ||= Registry.new(ActionController::Base.new.lookup_context)
@@ -92,8 +86,13 @@ module LooseErbs
         @routes ||= Routes.new(Rails.application)
       end
 
-      def scanner
-        Scanner.new
+      def renders_in_controllers
+        # TODO: explicit controller renders
+        registry.select { TemplateFilter.call(_1) && routes.public_action_for?(_1) }
+      end
+
+      def renders_in_helpers
+        Scanner.new.renders.filter_map { registry.lookup(_1) }
       end
 
       def visitor
