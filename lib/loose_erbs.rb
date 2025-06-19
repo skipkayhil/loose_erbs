@@ -62,7 +62,7 @@ module LooseErbs
 
         nodes.each { out.puts _1.template.identifier }
 
-        options[:all]
+        !!options[:all]
       end
     end
 
